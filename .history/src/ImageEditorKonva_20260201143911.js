@@ -221,7 +221,7 @@ img.onload = () => {
 
         <button
           className="controls"
-          onClick={handlePrint}
+          onClick={() => window.print()}
           style={{ cursor: "pointer", marginLeft: 12 }}>
         <FontAwesomeIcon icon={faPrint} />
            Print
