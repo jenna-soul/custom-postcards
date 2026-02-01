@@ -25,7 +25,6 @@ button {
 .tools {
   float: left;
   margin-right: 5px;
-  margin-top: 0 !important;
 }
 .tools button {
   width: 100px;
