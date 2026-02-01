@@ -176,7 +176,7 @@ input[type="file"] {
   #printableArea canvas {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* or cover if you want edge fill */
+    object-fit: contain; /* or cover if you want edge fill */
   }
   * {
     -webkit-print-color-adjust: exact !important;

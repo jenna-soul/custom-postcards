@@ -174,9 +174,8 @@ input[type="file"] {
   }
   #printableArea img,
   #printableArea canvas {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* or cover if you want edge fill */
+    max-width: 100%;
+    height: auto;
   }
   * {
     -webkit-print-color-adjust: exact !important;

@@ -154,33 +154,22 @@ input[type="file"] {
 
 /*Printing image*/
 @media print {
-  body * {
-    visibility: hidden;
+  body {
+    margin: 0;
   }
-  #printableArea,
-  #printableArea * {
-    visibility: visible;
-  }
+
   #printableArea {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: auto;
     width: 6in;
     height: 4in;
     margin: 0;
     padding: 0;
   }
+
   #printableArea img,
   #printableArea canvas {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* or cover if you want edge fill */
-  }
-  * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+    object-fit: contain; /* or cover if you want edge fill */
   }
 }
 

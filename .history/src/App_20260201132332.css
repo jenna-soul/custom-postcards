@@ -38,9 +38,10 @@ button {
 /*Printable area*/
 #printableArea {
   cursor: grab;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: "flex";
+  justify-content: "center";
+  align-items: "center";
+  margin-top: 10;
 }
 /*End printable area*/
 
@@ -74,17 +75,17 @@ button {
 
 /*Asset image list*/
 .thumbnails {
-  display: flex;
-  overflow-x: auto;
-  padding: 10px 0;
-  gap: 10px;
+  display: "flex";
+  overflow-x: "auto";
+  padding: "10px 0";
+  gap: "10px";
 }
 .thumbnails img {
   width: 100px;
-  height: auto;
-  cursor: pointer;
-  border: 2px solid transparent;
-  margin-top: 0px;
+  height: "auto";
+  cursor: "pointer";
+  border: "2px solid transparent";
+  margin-top: 0;
 }
 /*End asset image list*/
 
@@ -139,7 +140,7 @@ input[type="file"] {
   border: none;
   font-size: 1em;
   cursor: "pointer";
-  margin-left: 12px;
+  margin-left: 12;
 }
 .zoomControls {
   background-color: orchid;
@@ -166,21 +167,7 @@ input[type="file"] {
     left: 0;
     top: 0;
     width: 100%;
-    height: auto;
-    width: 6in;
-    height: 4in;
-    margin: 0;
-    padding: 0;
-  }
-  #printableArea img,
-  #printableArea canvas {
-    width: 100%;
     height: 100%;
-    object-fit: cover; /* or cover if you want edge fill */
-  }
-  * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
   }
 }
 

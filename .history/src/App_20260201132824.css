@@ -84,7 +84,7 @@ button {
   height: auto;
   cursor: pointer;
   border: 2px solid transparent;
-  margin-top: 0px;
+  margin-top: 0;
 }
 /*End asset image list*/
 
@@ -167,16 +167,11 @@ input[type="file"] {
     top: 0;
     width: 100%;
     height: auto;
-    width: 6in;
-    height: 4in;
-    margin: 0;
-    padding: 0;
   }
   #printableArea img,
   #printableArea canvas {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* or cover if you want edge fill */
+    max-width: 100%;
+    height: auto;
   }
   * {
     -webkit-print-color-adjust: exact !important;

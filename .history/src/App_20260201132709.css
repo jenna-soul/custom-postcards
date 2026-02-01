@@ -74,17 +74,17 @@ button {
 
 /*Asset image list*/
 .thumbnails {
-  display: flex;
-  overflow-x: auto;
-  padding: 10px 0;
-  gap: 10px;
+  display: "flex";
+  overflow-x: "auto";
+  padding: "10px 0";
+  gap: "10px";
 }
 .thumbnails img {
   width: 100px;
-  height: auto;
-  cursor: pointer;
-  border: 2px solid transparent;
-  margin-top: 0px;
+  height: "auto";
+  cursor: "pointer";
+  border: "2px solid transparent";
+  margin-top: 0;
 }
 /*End asset image list*/
 
@@ -166,17 +166,7 @@ input[type="file"] {
     left: 0;
     top: 0;
     width: 100%;
-    height: auto;
-    width: 6in;
-    height: 4in;
-    margin: 0;
-    padding: 0;
-  }
-  #printableArea img,
-  #printableArea canvas {
-    width: 100%;
     height: 100%;
-    object-fit: cover; /* or cover if you want edge fill */
   }
   * {
     -webkit-print-color-adjust: exact !important;
