@@ -1,8 +1,7 @@
 import React from 'react';
 import { Link, useMatch, useResolvedPath } from 'react-router-dom';
 import './App.css';
-import logo from './assets/logo-postal-stamp.svg?url';
-
+import logo from "./assets/logo.svg";
 export default function Navigation() {
       // React-friendly click handler
   const expandNavigation = () => {
@@ -15,7 +14,9 @@ export default function Navigation() {
   };
     return (
       <div className="topnav" id="myTopnav">
-      <a href="#"><img src={logo} alt="logo" className="logo" /></a>
+        
+   <img src={Logo} alt="Post Me logo" />
+        <a href="#home" className="active">Home</a>
         <a href="#home">Upload Image</a>
         <a
           href="#"

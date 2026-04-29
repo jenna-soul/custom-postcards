@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link, useMatch, useResolvedPath } from 'react-router-dom';
-import './App.css';
-import logo from './assets/logo-postal-stamp.svg?url';
+import './App.css'
 
 export default function Navigation() {
       // React-friendly click handler
@@ -14,8 +13,8 @@ export default function Navigation() {
     }
   };
     return (
-      <div className="topnav" id="myTopnav">
-      <a href="#"><img src={logo} alt="logo" className="logo" /></a>
+        <div className="topnav" id="myTopnav">
+        <a href="#home" className="active">Home</a>
         <a href="#home">Upload Image</a>
         <a
           href="#"
@@ -27,6 +26,8 @@ export default function Navigation() {
         >
           <i className="fa fa-bars"></i>
         </a>
+        <a href="#">
+      <h1>Custom Postcard Editor</h1></a>
       </div>
     )
 }

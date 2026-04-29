@@ -12,6 +12,9 @@ const ImageEditorKonva = () => {
   const [imageObj, setImageObj] = useState(null);
   const [imageScale, setImageScale] = useState(1);
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
+  const [lines, setLines] = useState([]);
+  const [strokeColor, setStrokeColor] = useState("#000000");
+  const isDrawing = useRef(false);
 
   // For zoom limits
   const MAX_SCALE = 3;
@@ -168,12 +171,46 @@ img.onload = () => {
     const y = (CANVAS_HEIGHT - imageObj.height * newScale) / 2;
     setImagePosition({ x, y });
   };
+
   
+  /* Comment out drawing features */
+  /*
+  // Draw handlers: store/unstore points in unscaled coordinates to keep lines consistent with zoom
+  const handleMouseDown = (e) => {
+    if (e.target.className === "Image") return;
+    if (!imageObj) return;
+    isDrawing.current = true;
+    const pos = e.target.getStage().getPointerPosition();
+    const unscaledX = (pos.x - imagePosition.x) / imageScale;
+    const unscaledY = (pos.y - imagePosition.y) / imageScale;
+    setLines([...lines, { points: [unscaledX, unscaledY], stroke: strokeColor }]);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDrawing.current || !imageObj) return;
+    const stage = e.target.getStage();
+    const pos = stage.getPointerPosition();
+    const unscaledX = (pos.x - imagePosition.x) / imageScale;
+    const unscaledY = (pos.y - imagePosition.y) / imageScale;
+
+    let lastLine = lines[lines.length - 1];
+    lastLine.points = lastLine.points.concat([unscaledX, unscaledY]);
+    lines.splice(lines.length - 1, 1, lastLine);
+    setLines(lines.concat());
+  };
+
+  const handleMouseUp = () => {
+    isDrawing.current = false;
+  };
+*/
   return (
     
     <div className="editor-wrapper">
-      
-        <div className="sidebar">
+
+      <div className="canvas">
+        
+      <div className="tools" style={{ marginTop: 10 }}>
+        
       <button
         className="controls"
         onClick={() => {
@@ -181,76 +218,128 @@ img.onload = () => {
             }}>
             Portrait
       </button>
-      
+      <br/>
       <button
             className="controls"
             onClick={() => {setOrientation("landscape");}}>
             Landscape
           </button>
-      
+      <br/>
       <button
             className="controls"
             onClick={() => {setOrientation("landscape");}}>
             <FontAwesomeIcon icon={faRotate} />
             Orientation
           </button>
-      
+      <br />
       <button
           className="controls"
           onClick={() => {
-            setSelectedFrame(null);
+            setLines([]);
+          setSelectedFrame(null);
           loadFrame(null);
             }}>
             <FontAwesomeIcon icon={faBorderNone} />
             Clear
-      </button>         
+      </button>
+          <br />
           
+          
+          
+{/*Remove drawing feature 
+      <button
+          className="controls"
+          onClick={() => setLines(lines.slice(0, -1))}
+          disabled={lines.length === 0}>
+          Undo Last
+      </button>
+      <br/>
+*/}
         {/* Zoom controls */}
 
-        <button className="controls"
+        <button className="zoomControls"
         onClick={() => zoom("in")}
         disabled={!imageObj || imageScale >= MAX_SCALE}
       >
         <FontAwesomeIcon icon={faMagnifyingGlassPlus} />
-        </button>
-        
+      </button>
+
+          <br/>
       <button
-          className="controls"
+          className="zoomControls"
           onClick={() => zoom("out")}
           disabled={!imageObj || imageScale <= getMinCoverScale()}
       >
         <FontAwesomeIcon icon={faMagnifyingGlassMinus} />
               </button>
-      <label htmlFor="file-upload" className="controls">
+
+          <br />
+          <div className="upload_print">
+      <label htmlFor="file-upload" className="custom-file-upload">
         <FontAwesomeIcon icon={faUpload} />
-        Upload Image
-      </label>
+          Upload Image
+        </label>
       <input
         id="file-upload"
+        className="controls"
         type="file"
         accept="image/*"
         onChange={handleUpload}
-        style={{ display: "none" }}
       />
 
+          <br />
         <button
           className="controls"
-          onClick={() => window.print()}>
+          onClick={() => window.print()}
+          style={{ cursor: "pointer", marginLeft: 12 }}>
         <FontAwesomeIcon icon={faPrint} />
            Print
       </button>
-</div>
-    <div className="content">
+      </div>
+          {/* Comment out drawing features 
+        <label>
+            Draw Color
+            <br/>
+          <input
+            type="color"
+            value={strokeColor}
+            onChange={(e) => setStrokeColor(e.target.value)}
+            style={{ marginLeft: 8 }}
+          />
+          </label>
+          */}
+      </div>
+
       <div
         id="printableArea"
   style={{
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+    border: "2px solid #333",
+    borderRadius: 8,
     width: CANVAS_WIDTH,
-    height: CANVAS_HEIGHT
+    height: CANVAS_HEIGHT,
+    margin: "auto",
+    backgroundColor: "#fff",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
   }}
       ><Stage
           width={CANVAS_WIDTH}
           height={CANVAS_HEIGHT}
         >
+  {/* Comment out drawing features 
+        <Stage
+          width={CANVAS_WIDTH}
+          height={CANVAS_HEIGHT}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onTouchStart={handleMouseDown}
+          onTouchMove={handleMouseMove}
+          onTouchEnd={handleMouseUp}
+        >*/}
           <Layer>
             {imageObj && ( //Uploaded image
               <KonvaImage
@@ -281,7 +370,21 @@ img.onload = () => {
               />
             )}
 
-            
+            {lines.map((line, i) => ( //User Drawings
+              <Line
+                key={i}
+                points={line.points.map((p, idx) =>
+                  idx % 2 === 0
+                    ? p * imageScale + imagePosition.x
+                    : p * imageScale + imagePosition.y
+                )}
+                stroke={line.stroke}
+                strokeWidth={3}
+                tension={0.5}
+                lineCap="round"
+                lineJoin="round"
+              />
+            ))}
           </Layer>
 
 
@@ -290,9 +393,10 @@ img.onload = () => {
         
       </div>
 
-        <Frames onSelectFrame={(imgSrc) => loadFrame(imgSrc)} orientation={orientation} />
+</div>
 
-      </div>
+<Frames onSelectFrame={(imgSrc) => loadFrame(imgSrc)} orientation={orientation} />
+
     </div>
   );
 };

@@ -25,7 +25,7 @@ button {
 /*Sidebar controls*/
 .editor-wrapper {
   display: flex;
-  gap: 10px;
+  gap: 16px;
   padding: 16px;
   align-items: flex-start;
 }
@@ -156,22 +156,25 @@ input[type="file"] {
 }
 
 .controls {
+  width: 100%;
   padding: 8px 12px;
   cursor: pointer;
   /* match font, border, background etc to your design */
   font-size: 14px;
-  border: none;
-  background-color: orchid;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f5f5f5;
   text-align: center;
 }
-
-.controls:hover {
-  background-color: orange;
+.zoomControls {
+  background-color: orchid;
+  padding: 0.5em;
+  border: none;
+  font-size: 1em;
 }
-
-.controls:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+.controls:hover,
+.zoomControls:hover {
+  background-color: rgb(177, 10, 171);
 }
 
 /*Printing image*/

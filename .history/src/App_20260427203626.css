@@ -156,6 +156,7 @@ input[type="file"] {
 }
 
 .controls {
+  width: 100%;
   padding: 8px 12px;
   cursor: pointer;
   /* match font, border, background etc to your design */

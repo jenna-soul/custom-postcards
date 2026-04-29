@@ -12,6 +12,7 @@ const ImageEditorKonva = () => {
   const [imageObj, setImageObj] = useState(null);
   const [imageScale, setImageScale] = useState(1);
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
+  const [lines, setLines] = useState([]);
 
   // For zoom limits
   const MAX_SCALE = 3;
@@ -198,7 +199,8 @@ img.onload = () => {
       <button
           className="controls"
           onClick={() => {
-            setSelectedFrame(null);
+            setLines([]);
+          setSelectedFrame(null);
           loadFrame(null);
             }}>
             <FontAwesomeIcon icon={faBorderNone} />
@@ -221,16 +223,18 @@ img.onload = () => {
       >
         <FontAwesomeIcon icon={faMagnifyingGlassMinus} />
               </button>
-      <label htmlFor="file-upload" className="controls">
+
+          <div className="upload_print">
+      <label htmlFor="file-upload" className="custom-file-upload">
         <FontAwesomeIcon icon={faUpload} />
-        Upload Image
-      </label>
+          Upload Image
+        </label>
       <input
         id="file-upload"
+        className="controls"
         type="file"
         accept="image/*"
         onChange={handleUpload}
-        style={{ display: "none" }}
       />
 
         <button
@@ -239,18 +243,39 @@ img.onload = () => {
         <FontAwesomeIcon icon={faPrint} />
            Print
       </button>
+      </div>
 </div>
     <div className="content">
       <div
         id="printableArea"
   style={{
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+    border: "2px solid #333",
+    borderRadius: 8,
     width: CANVAS_WIDTH,
-    height: CANVAS_HEIGHT
+    height: CANVAS_HEIGHT,
+    margin: "auto",
+    backgroundColor: "#fff",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
   }}
       ><Stage
           width={CANVAS_WIDTH}
           height={CANVAS_HEIGHT}
         >
+  {/* Comment out drawing features 
+        <Stage
+          width={CANVAS_WIDTH}
+          height={CANVAS_HEIGHT}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onTouchStart={handleMouseDown}
+          onTouchMove={handleMouseMove}
+          onTouchEnd={handleMouseUp}
+        >*/}
           <Layer>
             {imageObj && ( //Uploaded image
               <KonvaImage
@@ -281,7 +306,21 @@ img.onload = () => {
               />
             )}
 
-            
+            {lines.map((line, i) => ( //User Drawings
+              <Line
+                key={i}
+                points={line.points.map((p, idx) =>
+                  idx % 2 === 0
+                    ? p * imageScale + imagePosition.x
+                    : p * imageScale + imagePosition.y
+                )}
+                stroke={line.stroke}
+                strokeWidth={3}
+                tension={0.5}
+                lineCap="round"
+                lineJoin="round"
+              />
+            ))}
           </Layer>
 
 

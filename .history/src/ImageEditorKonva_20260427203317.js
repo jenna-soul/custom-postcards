@@ -230,7 +230,6 @@ img.onload = () => {
         type="file"
         accept="image/*"
         onChange={handleUpload}
-        style={{ display: "none" }}
       />
 
         <button

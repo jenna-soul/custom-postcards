@@ -25,7 +25,7 @@ button {
 /*Sidebar controls*/
 .editor-wrapper {
   display: flex;
-  gap: 10px;
+  gap: 16px;
   padding: 16px;
   align-items: flex-start;
 }
@@ -154,24 +154,24 @@ input[type="file"] {
 .custom-file-upload:hover {
   background-color: orchid;
 }
-
 .controls {
-  padding: 8px 12px;
-  cursor: pointer;
-  /* match font, border, background etc to your design */
-  font-size: 14px;
-  border: none;
+  height: 110%;
   background-color: orchid;
-  text-align: center;
+  padding: 0.5em;
+  border: none;
+  font-size: 1em;
+  cursor: "pointer";
+  width: 100%;
 }
-
-.controls:hover {
-  background-color: orange;
+.zoomControls {
+  background-color: orchid;
+  padding: 0.5em;
+  border: none;
+  font-size: 1em;
 }
-
-.controls:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+.controls:hover,
+.zoomControls:hover {
+  background-color: rgb(177, 10, 171);
 }
 
 /*Printing image*/

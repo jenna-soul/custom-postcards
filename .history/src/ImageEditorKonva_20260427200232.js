@@ -198,7 +198,8 @@ img.onload = () => {
       <button
           className="controls"
           onClick={() => {
-            setSelectedFrame(null);
+            setLines([]);
+          setSelectedFrame(null);
           loadFrame(null);
             }}>
             <FontAwesomeIcon icon={faBorderNone} />
@@ -221,16 +222,18 @@ img.onload = () => {
       >
         <FontAwesomeIcon icon={faMagnifyingGlassMinus} />
               </button>
-      <label htmlFor="file-upload" className="controls">
+
+          <div className="upload_print">
+      <label htmlFor="file-upload" className="custom-file-upload">
         <FontAwesomeIcon icon={faUpload} />
-        Upload Image
-      </label>
+          Upload Image
+        </label>
       <input
         id="file-upload"
+        className="controls"
         type="file"
         accept="image/*"
         onChange={handleUpload}
-        style={{ display: "none" }}
       />
 
         <button
@@ -239,13 +242,23 @@ img.onload = () => {
         <FontAwesomeIcon icon={faPrint} />
            Print
       </button>
+      </div>
 </div>
     <div className="content">
       <div
         id="printableArea"
   style={{
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+    border: "2px solid #333",
+    borderRadius: 8,
     width: CANVAS_WIDTH,
-    height: CANVAS_HEIGHT
+    height: CANVAS_HEIGHT,
+    margin: "auto",
+    backgroundColor: "#fff",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
   }}
       ><Stage
           width={CANVAS_WIDTH}

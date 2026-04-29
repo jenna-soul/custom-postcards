@@ -8,6 +8,7 @@ function App() {
   return (
     <div className="App">
 
+      <h1>Custom Postcard Editor</h1>
       <h2 style={{ textAlign: "center" }}>Create Your Postcard</h2>
       <p style={{ textAlign: "center", marginBottom: 10 }}>
         1. Upload an image → 2. Draw or decorate → 3. Prin

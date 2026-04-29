@@ -25,7 +25,7 @@ button {
 /*Sidebar controls*/
 .editor-wrapper {
   display: flex;
-  gap: 10px;
+  gap: 16px;
   padding: 16px;
   align-items: flex-start;
 }
@@ -156,6 +156,7 @@ input[type="file"] {
 }
 
 .controls {
+  width: 100%;
   padding: 8px 12px;
   cursor: pointer;
   /* match font, border, background etc to your design */
@@ -166,7 +167,7 @@ input[type="file"] {
 }
 
 .controls:hover {
-  background-color: orange;
+  background-color: #e0e0e0;
 }
 
 .controls:disabled {

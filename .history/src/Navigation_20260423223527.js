@@ -15,7 +15,7 @@ export default function Navigation() {
   };
     return (
       <div className="topnav" id="myTopnav">
-      <a href="#"><img src={logo} alt="logo" className="logo" /></a>
+      <img src={logo} alt="logo" style={{ height: 40 }} />
         <a href="#home">Upload Image</a>
         <a
           href="#"

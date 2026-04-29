@@ -221,17 +221,17 @@ img.onload = () => {
       >
         <FontAwesomeIcon icon={faMagnifyingGlassMinus} />
               </button>
-      <label htmlFor="file-upload" className="controls">
-        <FontAwesomeIcon icon={faUpload} />
-        Upload Image
-      </label>
-      <input
-        id="file-upload"
-        type="file"
-        accept="image/*"
-        onChange={handleUpload}
-        style={{ display: "none" }}
-      />
+<label htmlFor="file-upload" className="controls">
+  <FontAwesomeIcon icon={faUpload} />
+  Upload Image
+</label>
+<input
+  id="file-upload"
+  type="file"
+  accept="image/*"
+  onChange={handleUpload}
+  style={{ display: "none" }}
+/>
 
         <button
           className="controls"
