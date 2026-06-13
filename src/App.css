@@ -1,118 +1,283 @@
-.App {
-  text-align: center;
-}
+/* ── Design tokens ─────────────────────────────────────────────────────────
+   bg          #fdf8f0   warm cream page
+   sidebar     #ffffff   white card
+   primary     #e8896a   peach / terra-cotta
+   primary-dk  #c96e4e   hover / active
+   accent-lt   #fce8d8   very light peach (borders, dividers)
+   text        #5c3d2e   warm dark brown
+   text-muted  #b09080   muted warm brown
+   ─────────────────────────────────────────────────────────────────────── */
 
+/* ── Navigation ─────────────────────────────────────────────────────────── */
 .logo {
   height: 12vmin;
-  float: left;
 }
 
 .topnav {
-  background-color: orchid;
-  overflow: hidden;
-}
-
-button {
-  cursor: pointer;
-}
-/*Frames temporary - push to below printable area*/
-.frames {
-  clear: both;
-}
-/*End Frames temporary - push to below printable area*/
-
-/*Canvas Design*/
-/*Sidebar controls*/
-.editor-wrapper {
+  background-color: #e8896a;
   display: flex;
-  gap: 10px;
-  padding: 16px;
-  align-items: flex-start;
-}
-.sidebar {
-  flex: 0 0 25%;
-  max-width: 25%;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.tools {
-  float: left;
-  margin-right: 5px;
-  margin-top: 0 !important;
-}
-.tools button {
-  width: 100px;
-}
-.canvas {
-  max-width: fit-content;
-  margin-left: auto;
-  margin-right: auto;
-}
-/*End canvas design*/
-
-/*Printable area*/
-#printableArea {
-  cursor: grab;
-  display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-
-  border: 2px solid #333;
-  border-radius: 8;
-  margin: auto;
-  background-color: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 8px 20px;
+  box-shadow: 0 2px 10px rgba(180, 80, 40, 0.15);
 }
-/*End printable area*/
 
-/* Style the links inside the navigation bar */
 .topnav a {
   float: left;
   display: block;
-  color: #f2f2f2;
+  color: #fff5f0;
   text-align: center;
-  padding: 14px 16px;
+  padding: 14px 18px;
   text-decoration: none;
-  font-size: 17px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: background-color 0.15s, color 0.15s;
 }
 
-/* Change the color of links on hover */
 .topnav a:hover {
-  background-color: orange;
-  color: white;
+  background-color: #c96e4e;
+  color: #ffffff;
 }
 
-/* Add an active class to highlight the current page */
 .topnav a.active {
-  background-color: orchid;
-  color: white;
+  background-color: #c96e4e;
+  color: #ffffff;
 }
 
-/* Hide the link that should open and close the topnav on small screens */
 .topnav .icon {
   display: none;
 }
 
-/*Asset image list*/
+/* ── Page ────────────────────────────────────────────────────────────────── */
+/* Subtle dot-grid pattern gives it a stationery / craft-paper feel */
+.App {
+  min-height: 100vh;
+  background-color: #fdf8f0;
+  background-image: radial-gradient(#f0cebd 0.6px, transparent 0.6px);
+  background-size: 22px 22px;
+}
+
+.App h2 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #5c3d2e;
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
+}
+
+.App > p {
+  font-size: 14px;
+  color: #b09080;
+  font-weight: 600;
+}
+
+/* ── Editor layout ───────────────────────────────────────────────────────── */
+.editor-wrapper {
+  display: flex;
+  gap: 20px;
+  padding: 24px;
+  align-items: flex-start;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+.sidebar {
+  flex: 0 0 170px;
+  max-width: 170px;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  /* Peach accent stripe at top — like a washi tape strip */
+  border-top: 5px solid #e8896a;
+  box-shadow:
+    0 4px 20px rgba(180, 100, 60, 0.10),
+    0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.sidebar-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #c4a090;
+  margin: 0;
+  padding: 6px 2px 2px;
+}
+
+.sidebar-divider {
+  border: none;
+  border-top: 1px dashed #f0d5c5;
+  margin: 6px 0;
+}
+
+/* ── Controls ────────────────────────────────────────────────────────────── */
+button {
+  cursor: pointer;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 2px solid #f0d0bc;
+  background: #ffffff;
+  color: #6b4030;
+  font-size: 13px;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+              color 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
+}
+
+.controls:hover {
+  background-color: #e8896a;
+  border-color: #e8896a;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(232, 137, 106, 0.35);
+}
+
+.controls:active {
+  background-color: #c96e4e;
+  border-color: #c96e4e;
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.controls:disabled {
+  opacity: 0.32;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Zoom pair — side by side */
+.zoom-row {
+  display: flex;
+  gap: 6px;
+}
+
+.zoom-btn {
+  flex: 1;
+  justify-content: center;
+  padding: 8px 6px;
+}
+
+/* Print button — always filled so it visually pops */
+.print-btn {
+  background-color: #e8896a;
+  border-color: #e8896a;
+  color: #ffffff;
+  margin-top: 4px;
+  box-shadow: 0 3px 10px rgba(232, 137, 106, 0.30);
+}
+
+.print-btn:hover {
+  background-color: #c96e4e;
+  border-color: #c96e4e;
+  box-shadow: 0 4px 12px rgba(201, 110, 78, 0.35);
+}
+
+/* ── Content area ────────────────────────────────────────────────────────── */
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Postcard canvas ─────────────────────────────────────────────────────── */
+/* White mat border + thin peach ring + warm shadow = photo-on-desk look */
+#printableArea {
+  cursor: grab;
+  border-radius: 4px;
+  background-color: #ffffff;
+  overflow: hidden;
+  display: block;
+  border: 8px solid #ffffff;
+  box-shadow:
+    0 0 0 2px #f4c5a8,
+    0 12px 40px rgba(180, 100, 60, 0.14),
+    0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+#printableArea:active {
+  cursor: grabbing;
+}
+
+/* ── Canvas empty state ──────────────────────────────────────────────────── */
+.canvas-empty-state {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  color: #d4b0a0;
+  border: 2px dashed #f0c8b0;
+  border-radius: 4px;
+  background: #fffaf6;
+  font-size: 14px;
+  font-weight: 700;
+  user-select: none;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.canvas-empty-state:hover {
+  border-color: #e8896a;
+  color: #e8896a;
+}
+
+/* ── Frame picker ────────────────────────────────────────────────────────── */
+.content h3 {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c4a090;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
 .thumbnails {
   display: flex;
   overflow-x: auto;
-  padding: 10px 0;
-  gap: 10px;
-  justify-content: center;
+  padding: 6px 0 14px;
+  gap: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #f0d5c5 transparent;
 }
+
 .thumbnails img {
-  width: 100px;
+  width: 150px;
   height: auto;
   cursor: pointer;
-  border: 2px solid transparent;
-  margin-top: 0px;
+  border: 3px solid transparent;
+  border-radius: 6px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
-/*End asset image list*/
 
-/* When the screen is less than 600 pixels wide, hide all links, except for the first one ("Home"). Show the link that contains should open and close the topnav (.icon) */
+.thumbnails img:hover {
+  /* Slight tilt + lift for a playful pick-up-the-postcard feel */
+  transform: translateY(-4px) rotate(1.5deg);
+  box-shadow: 0 10px 22px rgba(180, 100, 60, 0.18);
+  border-color: #e8896a;
+}
+
+/* ── Responsive nav ──────────────────────────────────────────────────────── */
 @media screen and (max-width: 600px) {
   .topnav a:not(:first-child) {
     display: none;
@@ -123,7 +288,6 @@ button {
   }
 }
 
-/* The "responsive" class is added to the topnav with JavaScript when the user clicks on the icon. This class makes the topnav look good on small screens (display the links vertically instead of horizontally) */
 @media screen and (max-width: 600px) {
   .topnav.responsive {
     position: relative;
@@ -140,99 +304,55 @@ button {
   }
 }
 
-/*control settings*/
-input[type="file"] {
-  display: none;
-}
-
-.custom-file-upload {
-  border: 1px solid orchid;
-  padding: 6px 12px;
-  cursor: pointer;
-  width: 100%;
-}
-.custom-file-upload:hover {
-  background-color: orchid;
-}
-
-.controls {
-  padding: 8px 12px;
-  cursor: pointer;
-  /* match font, border, background etc to your design */
-  font-size: 14px;
-  border: none;
-  background-color: orchid;
-  text-align: center;
-}
-
-.controls:hover {
-  background-color: orange;
-}
-
-.controls:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-/*Printing image*/
-@media print {
-  body * {
-    visibility: hidden;
+/* ── Mobile editor layout ────────────────────────────────────────────────── */
+@media screen and (max-width: 768px) {
+  .editor-wrapper {
+    flex-direction: column;
+    padding: 12px;
+    gap: 10px;
   }
-  #printableArea,
-  #printableArea * {
-    visibility: visible;
-  }
-  #printableArea {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  #printableArea img,
-  #printableArea canvas {
+
+  .sidebar {
+    flex: none;
+    max-width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
     width: 100%;
-    height: 100%;
-    object-fit: cover; /* or cover if you want edge fill */
+    border-radius: 14px;
+    order: 2;
   }
-  * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+
+  .sidebar-label,
+  .sidebar-divider {
+    display: none;
+  }
+
+  .sidebar .controls {
+    flex: 1 1 auto;
+    min-width: 64px;
+    justify-content: center;
+  }
+
+  .zoom-row {
+    flex: 1 1 auto;
+  }
+
+  .content {
+    width: 100%;
+    order: 1;
+    overflow-x: auto;
+  }
+
+  #printableArea {
+    max-width: 100%;
+    overflow: hidden;
+    margin: 0 auto;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* ── Print ───────────────────────────────────────────────────────────────── */
+/* Printing is handled via an isolated iframe — see handlePrint in           */
+/* ImageEditorKonva.js. This rule prevents Ctrl+P from printing the UI.     */
+@media print {
+  body { display: none; }
 }

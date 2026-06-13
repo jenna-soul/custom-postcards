@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 
 export default function Geolocation() {
-    <h1>Geolocation</h1>
   // const variable array to save the users location
   const [userLocation, setUserLocation] = useState(null);
 

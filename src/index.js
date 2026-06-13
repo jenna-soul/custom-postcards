@@ -5,7 +5,6 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import Navigation from './Navigation';
 import { BrowserRouter } from 'react-router-dom';
-import ImageEditorKonva from './ImageEditorKonva.js';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 

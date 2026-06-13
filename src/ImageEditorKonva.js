@@ -1,301 +1,327 @@
-import React, { useState, useRef } from "react";
-import { Stage, Layer, Image as KonvaImage, Line, Rect } from "react-konva";
-import './App.css'
+import React, { useState, useRef, useEffect } from "react";
+import { Stage, Layer, Image as KonvaImage } from "react-konva";
+import useImage from "use-image";
+import './App.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBorderNone } from '@fortawesome/free-solid-svg-icons';
-import { faMagnifyingGlassPlus, faMagnifyingGlassMinus,faUpload,faPrint, faRotate} from '@fortawesome/free-solid-svg-icons';
-import { useEffect } from "react";
+import {
+  faBorderNone,
+  faMagnifyingGlassPlus,
+  faMagnifyingGlassMinus,
+  faUpload,
+  faPrint,
+  faRotate,
+  faCamera
+} from '@fortawesome/free-solid-svg-icons';
 import Frames from "./pages/Frames";
 
-const ImageEditorKonva = () => {
-
-  const [imageObj, setImageObj] = useState(null);
-  const [imageScale, setImageScale] = useState(1);
-  const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
-
-  // For zoom limits
-  const MAX_SCALE = 3;
-
-  //Frame Logic
-  const [frameObj, setFrameObj] = useState(null);
-  const [selectedFrame, setSelectedFrame] = useState(null);
-  const loadFrame = (src) => {
-    if (!src) {
-      setFrameObj(null);
-      return;
-    }
-
-    const img = new window.Image();
-    img.src = src;
-    img.onload = () => {
-      setFrameObj(img);
-
-      if (img.width > img.height) {
-        setOrientation("landscape");
-      } else {
-        setOrientation("portrait");
-      }
-    };
-  };
-
-  //End Frame Logic
-
-  //Scale Logic
-
-  const POSTCARD_SIZES = {
-  portrait: { width: 400, height: 600 },  // 4x6
-  landscape: { width: 600, height: 400 }  // 6x4
+const POSTCARD_SIZES = {
+  portrait:  { width: 400, height: 600 },
+  landscape: { width: 600, height: 400 }
 };
 
-const [orientation, setOrientation] = useState("landscape");
+const MAX_SCALE = 3;
 
-const CANVAS_WIDTH = POSTCARD_SIZES[orientation].width;
+const ImageEditorKonva = ({ location }) => {
+  const [imageUrl,    setImageUrl]    = useState(null);
+  const [imageScale,  setImageScale]  = useState(1);
+  const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
+  const [frameUrl,    setFrameUrl]    = useState(null);
+  const [orientation, setOrientation] = useState("landscape");
+  // useImage handles all load-timing concerns for Konva
+  const [imageObj]  = useImage(imageUrl  || '');
+  const [frameObj]  = useImage(frameUrl  || '');
+
+  const stageRef = useRef(null);
+
+  const CANVAS_WIDTH  = POSTCARD_SIZES[orientation].width;
   const CANVAS_HEIGHT = POSTCARD_SIZES[orientation].height;
-  
-const fitImageToFrame = (img) => {
-  const scaleX = CANVAS_WIDTH / img.width;
-  const scaleY = CANVAS_HEIGHT / img.height;
 
-  // IMPORTANT: use MAX here (cover behavior)
-  const scale = Math.max(scaleX, scaleY);
+  // ── Scale helpers ──────────────────────────────────────────────────────────
 
-  const x = (CANVAS_WIDTH - img.width * scale) / 2;
-  const y = (CANVAS_HEIGHT - img.height * scale) / 2;
-
-  setImageScale(scale);
-  setImagePosition({ x, y });
+  const fitImageToFrame = (img) => {
+    if (!img) return;
+    const scale = Math.max(CANVAS_WIDTH / img.width, CANVAS_HEIGHT / img.height);
+    setImageScale(scale);
+    setImagePosition({
+      x: (CANVAS_WIDTH  - img.width  * scale) / 2,
+      y: (CANVAS_HEIGHT - img.height * scale) / 2
+    });
   };
-
-useEffect(() => {
-  if (!frameObj) return;
-
-  const frameOrientation = frameObj.width > frameObj.height ? "landscape" : "portrait";
-
-  if (frameOrientation !== orientation) {
-    setFrameObj(null);       // remove frame
-    setSelectedFrame(null);  // clear selection
-  }
-}, [orientation]);
 
   const getMinCoverScale = () => {
-  if (!imageObj) return 1;
-  return Math.max(
-    CANVAS_WIDTH / imageObj.width,
-    CANVAS_HEIGHT / imageObj.height
-  );
+    if (!imageObj) return 1;
+    return Math.max(CANVAS_WIDTH / imageObj.width, CANVAS_HEIGHT / imageObj.height);
   };
-  
-  //End Scale Logic
 
-
-  //Start Image Movement logic
-const clampPosition = (x, y, scale = imageScale) => {
-  if (!imageObj) return { x, y };
-
-  const imgWidth = imageObj.width * scale;
-  const imgHeight = imageObj.height * scale;
-
-  const minX = Math.min(0, CANVAS_WIDTH - imgWidth);
-  const minY = Math.min(0, CANVAS_HEIGHT - imgHeight);
-
-  return {
-    x: Math.max(minX, Math.min(0, x)),
-    y: Math.max(minY, Math.min(0, y))
+  const clampPosition = (x, y, scale = imageScale) => {
+    if (!imageObj) return { x, y };
+    const imgW = imageObj.width  * scale;
+    const imgH = imageObj.height * scale;
+    return {
+      x: Math.max(Math.min(0, CANVAS_WIDTH  - imgW), Math.min(0, x)),
+      y: Math.max(Math.min(0, CANVAS_HEIGHT - imgH), Math.min(0, y))
+    };
   };
-};
-  //End image movement logic
 
-  const handleUpload = (e) => {
+  // When a new image loads, auto-match canvas orientation to the photo,
+  // then fit it. If orientation doesn't change the other effect won't fire,
+  // so we call fitImageToFrame directly in that case.
+  useEffect(() => {
+    if (!imageObj) return;
+    const autoOrientation = imageObj.width >= imageObj.height ? 'landscape' : 'portrait';
+    if (autoOrientation === orientation) {
+      fitImageToFrame(imageObj);
+    } else {
+      setOrientation(autoOrientation); // orientation effect will fit the image
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [imageObj]);
+
+  // Re-fit image and clear mismatched frame whenever orientation changes
+  useEffect(() => {
+    if (frameObj) {
+      const frameIs = frameObj.width > frameObj.height ? "landscape" : "portrait";
+      if (frameIs !== orientation) setFrameUrl(null);
+    }
+    if (imageObj) fitImageToFrame(imageObj);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orientation]);
+
+  // ── Frame ──────────────────────────────────────────────────────────────────
+
+  const loadFrame = (src) => {
+    setFrameUrl(src || null);
+    if (src) {
+      // Auto-switch orientation to match the frame
+      const img = new window.Image();
+      img.onload = () =>
+        setOrientation(img.width > img.height ? "landscape" : "portrait");
+      img.src = src;
+    }
+  };
+
+  // ── Upload ─────────────────────────────────────────────────────────────────
+  // createImageBitmap with imageOrientation:'from-image' bakes EXIF rotation
+  // into the pixel data so portrait phone photos aren't displayed sideways.
+  // The corrected bitmap is drawn to a canvas and exported as a data URL.
+
+  const handleUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new window.Image();
-      img.src = reader.result;
-img.onload = () => {
-  setImageObj(img);
-  fitImageToFrame(img);
-};
-    };
-    reader.readAsDataURL(file);
+    e.target.value = '';
+
+    try {
+      const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+      const canvas = document.createElement('canvas');
+      canvas.width  = bitmap.width;
+      canvas.height = bitmap.height;
+      canvas.getContext('2d').drawImage(bitmap, 0, 0);
+      bitmap.close();
+      setImageUrl(canvas.toDataURL('image/jpeg', 0.92));
+    } catch {
+      // Fallback for browsers that don't support imageOrientation option
+      const reader = new FileReader();
+      reader.onload = () => setImageUrl(reader.result);
+      reader.readAsDataURL(file);
+    }
   };
 
-  // Zoom handlers
+  // ── Zoom ───────────────────────────────────────────────────────────────────
 
   const zoom = (direction) => {
-  if (!imageObj) return;
-
-  const minScale = getMinCoverScale();
-  const factor = direction === "in" ? 1.2 : 1 / 1.2;
-
-
-
-  setImageScale(prevScale => {
-    const nextScale = Math.max(
-      minScale,
-      Math.min(prevScale * factor, MAX_SCALE)
-    );
-
-    // canvas center
-    const centerX = CANVAS_WIDTH / 2;
-    const centerY = CANVAS_HEIGHT / 2;
-
-    // convert canvas center → image coordinates
-    const imageCenterX =
-      (centerX - imagePosition.x) / prevScale;
-    const imageCenterY =
-      (centerY - imagePosition.y) / prevScale;
-
-    // calculate new position so image point stays centered
-    const newX =
-      centerX - imageCenterX * nextScale;
-    const newY =
-      centerY - imageCenterY * nextScale;
-
-    // clamp so image can't be dragged out of frame
-    const clamped = clampPosition(newX, newY, nextScale);
-    setImagePosition(clamped);
-
-    return nextScale;
-  });
-};
-  //End zoom handler
-  
-  // Adjust position to keep image centered on zoom
-  const updatePosition = (newScale) => {
     if (!imageObj) return;
-    const x = (CANVAS_WIDTH - imageObj.width * newScale) / 2;
-    const y = (CANVAS_HEIGHT - imageObj.height * newScale) / 2;
-    setImagePosition({ x, y });
+    const minScale = getMinCoverScale();
+    const factor   = direction === "in" ? 1.2 : 1 / 1.2;
+
+    setImageScale(prevScale => {
+      const nextScale  = Math.max(minScale, Math.min(prevScale * factor, MAX_SCALE));
+      const centerX    = CANVAS_WIDTH  / 2;
+      const centerY    = CANVAS_HEIGHT / 2;
+      const imgCenterX = (centerX - imagePosition.x) / prevScale;
+      const imgCenterY = (centerY - imagePosition.y) / prevScale;
+      const clamped    = clampPosition(
+        centerX - imgCenterX * nextScale,
+        centerY - imgCenterY * nextScale,
+        nextScale
+      );
+      setImagePosition(clamped);
+      return nextScale;
+    });
   };
-  
+
+  // ── Print ──────────────────────────────────────────────────────────────────
+  // Print from an isolated iframe so browser default margins never interfere.
+  // The iframe contains only the image and an @page rule with margin:0.
+
+  const handlePrint = () => {
+    if (!stageRef.current) return;
+    const dataURL = stageRef.current.toDataURL({ pixelRatio: 3 });
+    const size    = orientation === 'landscape' ? '6in 4in' : '4in 6in';
+
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:0;height:0;border:none;';
+    document.body.appendChild(iframe);
+
+    iframe.srcdoc = `<!DOCTYPE html><html><head><style>
+      @page { size: ${size}; margin: 0; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: white; }
+      img { display: block; width: 100%; height: 100%; object-fit: fill; }
+    </style></head><body>
+      <img src="${dataURL}" />
+    </body></html>`;
+
+    iframe.onload = () => {
+      // Brief delay lets the browser finish rendering the image before printing
+      setTimeout(() => {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+        iframe.contentWindow.onafterprint = () => {
+          if (iframe.parentNode) document.body.removeChild(iframe);
+        };
+      }, 300);
+    };
+  };
+
+  // ── Orientation toggle ─────────────────────────────────────────────────────
+
+  const toggleOrientation = () =>
+    setOrientation(prev => prev === "landscape" ? "portrait" : "landscape");
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+
   return (
-    
     <div className="editor-wrapper">
-      
-        <div className="sidebar">
-      <button
-        className="controls"
-        onClick={() => {
-          setOrientation("portrait");
-            }}>
-            Portrait
-      </button>
-      
-      <button
-            className="controls"
-            onClick={() => {setOrientation("landscape");}}>
-            Landscape
-          </button>
-      
-      <button
-            className="controls"
-            onClick={() => {setOrientation("landscape");}}>
-            <FontAwesomeIcon icon={faRotate} />
-            Orientation
-          </button>
-      
-      <button
-          className="controls"
-          onClick={() => {
-            setSelectedFrame(null);
-          loadFrame(null);
-            }}>
-            <FontAwesomeIcon icon={faBorderNone} />
-            Clear
-      </button>         
-          
-        {/* Zoom controls */}
 
-        <button className="controls"
-        onClick={() => zoom("in")}
-        disabled={!imageObj || imageScale >= MAX_SCALE}
-      >
-        <FontAwesomeIcon icon={faMagnifyingGlassPlus} />
+      <div className="sidebar">
+        <p className="sidebar-label">Orientation</p>
+        <button className="controls" onClick={() => setOrientation("portrait")}>Portrait</button>
+        <button className="controls" onClick={() => setOrientation("landscape")}>Landscape</button>
+        <button className="controls" onClick={toggleOrientation}>
+          <FontAwesomeIcon icon={faRotate} /> Flip
         </button>
-        
-      <button
-          className="controls"
-          onClick={() => zoom("out")}
-          disabled={!imageObj || imageScale <= getMinCoverScale()}
-      >
-        <FontAwesomeIcon icon={faMagnifyingGlassMinus} />
-              </button>
-      <label htmlFor="file-upload" className="controls">
-        <FontAwesomeIcon icon={faUpload} />
-        Upload Image
-      </label>
-      <input
-        id="file-upload"
-        type="file"
-        accept="image/*"
-        onChange={handleUpload}
-        style={{ display: "none" }}
-      />
 
-        <button
-          className="controls"
-          onClick={() => window.print()}>
-        <FontAwesomeIcon icon={faPrint} />
-           Print
-      </button>
-</div>
-    <div className="content">
-      <div
-        id="printableArea"
-  style={{
-    width: CANVAS_WIDTH,
-    height: CANVAS_HEIGHT
-  }}
-      ><Stage
-          width={CANVAS_WIDTH}
-          height={CANVAS_HEIGHT}
+        <hr className="sidebar-divider" />
+
+        <button className="controls" onClick={() => loadFrame(null)}>
+          <FontAwesomeIcon icon={faBorderNone} /> Clear Frame
+        </button>
+
+        <hr className="sidebar-divider" />
+
+        <p className="sidebar-label">Zoom</p>
+        <div className="zoom-row">
+          <button
+            className="controls zoom-btn"
+            onClick={() => zoom("in")}
+            disabled={!imageObj || imageScale >= MAX_SCALE}
+          >
+            <FontAwesomeIcon icon={faMagnifyingGlassPlus} />
+          </button>
+          <button
+            className="controls zoom-btn"
+            onClick={() => zoom("out")}
+            disabled={!imageObj || imageScale <= getMinCoverScale()}
+          >
+            <FontAwesomeIcon icon={faMagnifyingGlassMinus} />
+          </button>
+        </div>
+
+        <hr className="sidebar-divider" />
+
+        <p className="sidebar-label">Photo</p>
+        {/* Opens rear camera directly on mobile */}
+        <label htmlFor="camera-capture" className="controls">
+          <FontAwesomeIcon icon={faCamera} /> Take Photo
+        </label>
+        <input
+          id="camera-capture"
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={handleUpload}
+          style={{ display: 'none' }}
+        />
+
+        {/* Choose from gallery / file system */}
+        <label htmlFor="file-upload" className="controls">
+          <FontAwesomeIcon icon={faUpload} /> Upload
+        </label>
+        <input
+          id="file-upload"
+          type="file"
+          accept="image/*"
+          onChange={handleUpload}
+          style={{ display: 'none' }}
+        />
+
+        <hr className="sidebar-divider" />
+
+        <button className="controls print-btn" onClick={handlePrint}>
+          <FontAwesomeIcon icon={faPrint} /> Print
+        </button>
+      </div>
+
+      <div className="content">
+        <div
+          id="printableArea"
+          style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT, position: 'relative' }}
         >
-          <Layer>
-            {imageObj && ( //Uploaded image
-              <KonvaImage
-                image={imageObj}
-                x={imagePosition.x}
-                y={imagePosition.y}
-                width={imageObj.width * imageScale}
-                height={imageObj.height * imageScale}
-                draggable
-                dragBoundFunc={(pos) => clampPosition(pos.x, pos.y)}
-                onDragEnd={(e) => {
-                  setImagePosition({
-                    x: e.target.x(),
-                    y: e.target.y()
-                  });
-                }}
-              />
-            )}
-            
-            {frameObj && ( //Frame layer Logic
-              <KonvaImage
-                image={frameObj}
-                x={0}
-                y={0}
-                width={CANVAS_WIDTH}
-                height={CANVAS_HEIGHT}
-                listening={false} // prevents blocking drawing
-              />
-            )}
+          <Stage ref={stageRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT}>
 
-            
-          </Layer>
+            {/* Layer 1 – user photo */}
+            <Layer>
+              {imageObj && (
+                <KonvaImage
+                  image={imageObj}
+                  x={imagePosition.x}
+                  y={imagePosition.y}
+                  width={imageObj.width  * imageScale}
+                  height={imageObj.height * imageScale}
+                  draggable
+                  dragBoundFunc={(pos) => clampPosition(pos.x, pos.y)}
+                  onDragEnd={(e) =>
+                    setImagePosition({ x: e.target.x(), y: e.target.y() })
+                  }
+                />
+              )}
+            </Layer>
 
+            {/* Layer 2 – frame overlay (always on top, non-interactive) */}
+            <Layer>
+              {frameObj && (
+                <KonvaImage
+                  image={frameObj}
+                  x={0}
+                  y={0}
+                  width={CANVAS_WIDTH}
+                  height={CANVAS_HEIGHT}
+                  listening={false}
+                />
+              )}
+            </Layer>
 
-        </Stage>
+          </Stage>
 
-        
+          {/* Empty state — clicking opens the file picker */}
+          {!imageObj && (
+            <label htmlFor="file-upload" className="canvas-empty-state">
+              <FontAwesomeIcon icon={faCamera} size="2x" />
+              <span>Tap to add a photo</span>
+            </label>
+          )}
+        </div>
+
+        <Frames
+          onSelectFrame={(src) => loadFrame(src)}
+          orientation={orientation}
+          location={location}
+        />
       </div>
 
-        <Frames onSelectFrame={(imgSrc) => loadFrame(imgSrc)} orientation={orientation} />
 
-      </div>
     </div>
   );
 };
-
 
 export default ImageEditorKonva;
