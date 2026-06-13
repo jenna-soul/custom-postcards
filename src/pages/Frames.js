@@ -1,65 +1,84 @@
 import React, { useState, useEffect } from "react";
 
-// Keep key (file path) alongside each resolved URL so we can filter by folder name
-const ctx = require.context("../assets", true, /\.(png)$/);
-const allImageEntries = ctx.keys().map(key => {
-  const mod = ctx(key);
-  return { key, src: typeof mod === 'string' ? mod : mod.default };
-});
+// Keep key (file path) alongside each resolved URL so we can filter by folder name.
+// Only include files inside a subfolder (not root-level assets like logos).
+const ctx = require.context("../assets", true, /\.(png|svg)$/);
+const allImageEntries = ctx.keys()
+  .filter(key => key.split('/').length > 2)
+  .map(key => {
+    const mod = ctx(key);
+    return { key, src: typeof mod === 'string' ? mod : mod.default };
+  });
 
 export default function Frames({ onSelectFrame, orientation, location }) {
-  const [frames, setFrames] = useState([]);
+  const [localFrames, setLocalFrames] = useState([]);
+  const [otherFrames, setOtherFrames] = useState([]);
 
   useEffect(() => {
-    // When a location is detected, only show frames from that folder
-    const entries = location
-      ? allImageEntries.filter(({ key }) =>
-          key.toLowerCase().includes(location.toLowerCase())
-        )
-      : allImageEntries;
-
     const loadFrames = async () => {
       const results = await Promise.all(
-        entries.map(({ src }) =>
+        allImageEntries.map(({ key, src }) =>
           new Promise((resolve) => {
             const img = new window.Image();
             img.src = src;
             img.onload = () => {
               const imgOrientation = img.width > img.height ? "landscape" : "portrait";
-              resolve(imgOrientation === orientation ? src : null);
+              if (imgOrientation !== orientation) { resolve(null); return; }
+              const isLocal = location && key.toLowerCase().includes(location.toLowerCase());
+              resolve({ src, isLocal: !!isLocal });
             };
             img.onerror = () => resolve(null);
           })
         )
       );
-      setFrames(results.filter(Boolean));
+
+      const valid = results.filter(Boolean);
+      setLocalFrames(valid.filter(f => f.isLocal).map(f => f.src));
+      setOtherFrames(valid.filter(f => !f.isLocal).map(f => f.src));
     };
 
     loadFrames();
   }, [orientation, location]);
 
-  const heading = location
-    ? `${location.charAt(0).toUpperCase() + location.slice(1)} Frames`
-    : "Select a Frame";
+  const locationLabel = location
+    ? location.charAt(0).toUpperCase() + location.slice(1)
+    : null;
+
+  const totalFrames = localFrames.length + otherFrames.length;
 
   return (
     <div>
-      <h3>{heading}</h3>
-      {frames.length === 0 ? (
-        <p style={{ color: '#999', textAlign: 'center', padding: '8px 0' }}>
-          No frames available for this orientation.
-        </p>
+      {totalFrames === 0 ? (
+        <>
+          <h3>Select a Frame</h3>
+          <p style={{ color: '#999', textAlign: 'center', padding: '8px 0' }}>
+            No frames available for this orientation.
+          </p>
+        </>
       ) : (
-        <div className="thumbnails">
-          {frames.map((src, i) => (
-            <img
-              key={i}
-              src={src}
-              alt={`frame-${i}`}
-              onClick={() => onSelectFrame(src)}
-            />
-          ))}
-        </div>
+        <>
+          {localFrames.length > 0 && (
+            <>
+              <h3>{locationLabel} Frames</h3>
+              <div className="thumbnails">
+                {localFrames.map((src, i) => (
+                  <img key={i} src={src} alt={`local-frame-${i}`} onClick={() => onSelectFrame(src)} />
+                ))}
+              </div>
+            </>
+          )}
+
+          {otherFrames.length > 0 && (
+            <>
+              <h3>{localFrames.length > 0 ? 'Other Frames' : 'Select a Frame'}</h3>
+              <div className="thumbnails">
+                {otherFrames.map((src, i) => (
+                  <img key={i} src={src} alt={`frame-${i}`} onClick={() => onSelectFrame(src)} />
+                ))}
+              </div>
+            </>
+          )}
+        </>
       )}
     </div>
   );

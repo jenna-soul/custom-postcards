@@ -11,6 +11,11 @@ const LOCATION_ZONES = [
     name: 'ireland',
     label: 'Ireland',
     bounds: { minLat: 51.3, maxLat: 55.5, minLon: -10.7, maxLon: -5.9 }
+  },
+  {
+    name: 'wisconsin',
+    label: 'Wisconsin',
+    bounds: { minLat: 42.5, maxLat: 47.1, minLon: -92.9, maxLon: -86.2 }
   }
 ];
 
