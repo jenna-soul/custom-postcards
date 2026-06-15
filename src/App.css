@@ -277,6 +277,39 @@ button {
   border-color: #e8896a;
 }
 
+/* ── Location filter chips ───────────────────────────────────────────────── */
+.location-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 12px;
+}
+
+.location-chip {
+  padding: 4px 14px;
+  border-radius: 20px;
+  border: 1.5px solid #e0c4b5;
+  background: transparent;
+  color: #c4a090;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.location-chip:hover {
+  background: #f0d5c5;
+  border-color: #e8896a;
+  color: #b05a3a;
+}
+
+.location-chip.active {
+  background: orchid;
+  border-color: orchid;
+  color: white;
+}
+
 /* ── Responsive nav ──────────────────────────────────────────────────────── */
 @media screen and (max-width: 600px) {
   .topnav a:not(:first-child) {

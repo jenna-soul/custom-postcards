@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { LOCATION_ZONES } from "../locationZones";
 
-// Keep key (file path) alongside each resolved URL so we can filter by folder name.
-// Only include files inside a subfolder (not root-level assets like logos).
 const ctx = require.context("../assets", true, /\.(png|svg)$/);
 const allImageEntries = ctx.keys()
   .filter(key => key.split('/').length > 2)
@@ -10,9 +9,16 @@ const allImageEntries = ctx.keys()
     return { key, src: typeof mod === 'string' ? mod : mod.default };
   });
 
+function getZoneForKey(key) {
+  const lowerKey = key.toLowerCase();
+  return LOCATION_ZONES.find(z => lowerKey.includes(z.name.toLowerCase())) || null;
+}
+
 export default function Frames({ onSelectFrame, orientation, location }) {
   const [localFrames, setLocalFrames] = useState([]);
-  const [otherFrames, setOtherFrames] = useState([]);
+  const [otherByZone, setOtherByZone] = useState({});
+  const [genericFrames, setGenericFrames] = useState([]);
+  const [activeFilter, setActiveFilter] = useState(null);
 
   useEffect(() => {
     const loadFrames = async () => {
@@ -24,8 +30,9 @@ export default function Frames({ onSelectFrame, orientation, location }) {
             img.onload = () => {
               const imgOrientation = img.width > img.height ? "landscape" : "portrait";
               if (imgOrientation !== orientation) { resolve(null); return; }
-              const isLocal = location && key.toLowerCase().includes(location.toLowerCase());
-              resolve({ src, isLocal: !!isLocal });
+              const zone = getZoneForKey(key);
+              const isLocal = location && zone && zone.name.toLowerCase() === location.toLowerCase();
+              resolve({ src, zone, isLocal: !!isLocal });
             };
             img.onerror = () => resolve(null);
           })
@@ -34,21 +41,50 @@ export default function Frames({ onSelectFrame, orientation, location }) {
 
       const valid = results.filter(Boolean);
       setLocalFrames(valid.filter(f => f.isLocal).map(f => f.src));
-      setOtherFrames(valid.filter(f => !f.isLocal).map(f => f.src));
+
+      const byZone = {};
+      const generic = [];
+      valid.filter(f => !f.isLocal).forEach(f => {
+        if (f.zone) {
+          if (!byZone[f.zone.name]) byZone[f.zone.name] = { label: f.zone.label, frames: [] };
+          byZone[f.zone.name].frames.push(f.src);
+        } else {
+          generic.push(f.src);
+        }
+      });
+      setOtherByZone(byZone);
+      setGenericFrames(generic);
     };
 
+    setActiveFilter(null);
     loadFrames();
   }, [orientation, location]);
 
   const locationLabel = location
-    ? location.charAt(0).toUpperCase() + location.slice(1)
+    ? (LOCATION_ZONES.find(z => z.name === location)?.label || location.charAt(0).toUpperCase() + location.slice(1))
     : null;
 
-  const totalFrames = localFrames.length + otherFrames.length;
+  const otherZoneNames = Object.keys(otherByZone);
+  const hasOther = otherZoneNames.length > 0 || genericFrames.length > 0;
+  const hasAnyFrames = localFrames.length > 0 || hasOther;
+
+  let filteredOther;
+  if (!activeFilter) {
+    filteredOther = [
+      ...otherZoneNames.flatMap(zn => otherByZone[zn].frames),
+      ...genericFrames,
+    ];
+  } else if (activeFilter === '__generic__') {
+    filteredOther = genericFrames;
+  } else {
+    filteredOther = otherByZone[activeFilter]?.frames || [];
+  }
+
+  const toggleFilter = (key) => setActiveFilter(prev => prev === key ? null : key);
 
   return (
     <div>
-      {totalFrames === 0 ? (
+      {!hasAnyFrames ? (
         <>
           <h3>Select a Frame</h3>
           <p style={{ color: '#999', textAlign: 'center', padding: '8px 0' }}>
@@ -68,11 +104,40 @@ export default function Frames({ onSelectFrame, orientation, location }) {
             </>
           )}
 
-          {otherFrames.length > 0 && (
+          {hasOther && (
             <>
               <h3>{localFrames.length > 0 ? 'Other Frames' : 'Select a Frame'}</h3>
+
+              {otherZoneNames.length > 0 && (
+                <div className="location-chips">
+                  <button
+                    className={`location-chip${!activeFilter ? ' active' : ''}`}
+                    onClick={() => setActiveFilter(null)}
+                  >
+                    All
+                  </button>
+                  {otherZoneNames.map(zn => (
+                    <button
+                      key={zn}
+                      className={`location-chip${activeFilter === zn ? ' active' : ''}`}
+                      onClick={() => toggleFilter(zn)}
+                    >
+                      {otherByZone[zn].label}
+                    </button>
+                  ))}
+                  {genericFrames.length > 0 && (
+                    <button
+                      className={`location-chip${activeFilter === '__generic__' ? ' active' : ''}`}
+                      onClick={() => toggleFilter('__generic__')}
+                    >
+                      General
+                    </button>
+                  )}
+                </div>
+              )}
+
               <div className="thumbnails">
-                {otherFrames.map((src, i) => (
+                {filteredOther.map((src, i) => (
                   <img key={i} src={src} alt={`frame-${i}`} onClick={() => onSelectFrame(src)} />
                 ))}
               </div>
