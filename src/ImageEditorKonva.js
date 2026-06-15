@@ -159,7 +159,8 @@ const ImageEditorKonva = ({ location }) => {
     const size    = orientation === 'landscape' ? '6in 4in' : '4in 6in';
 
     const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:0;height:0;border:none;';
+    // 1px size so the browser actually renders/decodes content before printing
+    iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;border:none;';
     document.body.appendChild(iframe);
 
     iframe.srcdoc = `<!DOCTYPE html><html><head><style>
@@ -167,20 +168,10 @@ const ImageEditorKonva = ({ location }) => {
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
       html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: white; }
       img { display: block; width: 100%; height: 100%; object-fit: fill; }
-    </style></head><body>
-      <img src="${dataURL}" />
+    </style><script>window.onafterprint = () => { if (window.frameElement) window.frameElement.remove(); }<\/script>
+    </head><body>
+      <img src="${dataURL}" onload="window.focus(); window.print();" />
     </body></html>`;
-
-    iframe.onload = () => {
-      // Brief delay lets the browser finish rendering the image before printing
-      setTimeout(() => {
-        iframe.contentWindow.focus();
-        iframe.contentWindow.print();
-        iframe.contentWindow.onafterprint = () => {
-          if (iframe.parentNode) document.body.removeChild(iframe);
-        };
-      }, 300);
-    };
   };
 
   // ── Orientation toggle ─────────────────────────────────────────────────────
