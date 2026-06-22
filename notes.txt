@@ -1,0 +1,11 @@
+- Make frame locations searchable
+- Test printing
+
+##How to add a location
+1. Add a folder in the assets folder with the title of the location
+2. Open locationZones.js and add the location, the name needs to match the folder name
+  {
+    name: 'oregon',
+    label: 'Oregon',
+    bounds: { minLat: 42.0, maxLat: 46.25, minLon: -124.6, maxLon: -116.5 }
+  }
