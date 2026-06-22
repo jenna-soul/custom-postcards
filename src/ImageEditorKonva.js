@@ -150,19 +150,31 @@ const ImageEditorKonva = ({ location }) => {
   };
 
   // ── Print ──────────────────────────────────────────────────────────────────
-  // Exports the canvas as a JPEG blob, opens a new tab with a blob URL (short
-  // reference rather than a multi-MB base64 string), and triggers print there.
-  // The blob URL approach avoids Android Chrome's "preparing preview" hang.
+  // On mobile: uses the Web Share API to open the native share/print sheet.
+  // On desktop: opens a new tab with just the image and triggers print there.
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     if (!stageRef.current) return;
     const size = orientation === 'landscape' ? '6in 4in' : '4in 6in';
 
     const canvas = stageRef.current.toCanvas({ pixelRatio: 2 });
-    canvas.toBlob((blob) => {
+    canvas.toBlob(async (blob) => {
       if (!blob) return;
-      const blobURL = URL.createObjectURL(blob);
 
+      const file = new File([blob], 'postcard.jpg', { type: 'image/jpeg' });
+
+      // Web Share API — available on Android Chrome and iOS Safari
+      if (navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: 'Postcard' });
+          return;
+        } catch (err) {
+          if (err.name === 'AbortError') return; // user cancelled share sheet
+        }
+      }
+
+      // Desktop fallback: new tab with blob URL
+      const blobURL = URL.createObjectURL(blob);
       const w = window.open('', '_blank');
       if (!w) { URL.revokeObjectURL(blobURL); return; }
 
@@ -176,7 +188,6 @@ const ImageEditorKonva = ({ location }) => {
         <script>window.onafterprint = function() { window.close(); };<\/script>
       </body></html>`);
       w.document.close();
-
       setTimeout(() => URL.revokeObjectURL(blobURL), 120000);
     }, 'image/jpeg', 0.9);
   };
