@@ -150,60 +150,27 @@ const ImageEditorKonva = ({ location }) => {
   };
 
   // ── Print ──────────────────────────────────────────────────────────────────
-  // Uses @media print on the main window — the only reliable approach on mobile
-  // (iOS Safari ignores iframe print entirely).
+  // Opens a new tab containing only the canvas image and triggers print there.
+  // Avoids all @media print / CSS conflicts that cause blank previews on mobile.
 
   const handlePrint = () => {
     if (!stageRef.current) return;
     const dataURL = stageRef.current.toDataURL({ pixelRatio: 3 });
     const size    = orientation === 'landscape' ? '6in 4in' : '4in 6in';
 
-    const style = document.createElement('style');
-    style.id = '__print-style';
-    style.textContent = `
-      @media print {
-        @page { size: ${size}; margin: 0; }
-        body > *:not(#__print-overlay) { display: none !important; visibility: hidden !important; }
-        #__print-overlay {
-          display: block !important; visibility: visible !important;
-          position: fixed !important;
-          left: 0 !important; top: 0 !important;
-          right: 0 !important; bottom: 0 !important;
-          width: 100% !important; height: 100% !important;
-          overflow: visible !important;
-          transform: none !important;
-        }
-        #__print-overlay img {
-          display: block; width: 100%; height: 100%; object-fit: fill;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
-        }
-      }
-    `;
+    const w = window.open('', '_blank');
+    if (!w) return;
 
-    const overlay = document.createElement('div');
-    overlay.id = '__print-overlay';
-    // Off-screen instead of display:none so the browser actually decodes the image
-    overlay.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:600px;height:400px;overflow:hidden;';
-    overlay.innerHTML = `<img src="${dataURL}" style="width:100%;height:100%;object-fit:fill;" />`;
-
-    const cleanup = () => {
-      document.getElementById('__print-style')?.remove();
-      document.getElementById('__print-overlay')?.remove();
-      window.onafterprint = null;
-    };
-
-    document.head.appendChild(style);
-    document.body.appendChild(overlay);
-    window.onafterprint = cleanup;
-
-    const img = overlay.querySelector('img');
-    if (img.complete) {
-      window.print();
-    } else {
-      img.onload = () => window.print();
-      img.onerror = () => window.print();
-    }
+    w.document.write(`<!DOCTYPE html><html><head><style>
+      @page { size: ${size}; margin: 0; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+      img { display: block; width: 100%; height: 100%; object-fit: fill; }
+    </style></head><body>
+      <img src="${dataURL}" onload="window.print();" />
+      <script>window.onafterprint = () => window.close();<\/script>
+    </body></html>`);
+    w.document.close();
   };
 
   // ── Orientation toggle ─────────────────────────────────────────────────────
