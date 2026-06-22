@@ -150,28 +150,47 @@ const ImageEditorKonva = ({ location }) => {
   };
 
   // ── Print ──────────────────────────────────────────────────────────────────
-  // Print from an isolated iframe so browser default margins never interfere.
-  // The iframe contains only the image and an @page rule with margin:0.
+  // Uses @media print on the main window — the only reliable approach on mobile
+  // (iOS Safari ignores iframe print entirely).
 
   const handlePrint = () => {
     if (!stageRef.current) return;
     const dataURL = stageRef.current.toDataURL({ pixelRatio: 3 });
     const size    = orientation === 'landscape' ? '6in 4in' : '4in 6in';
 
-    const iframe = document.createElement('iframe');
-    // 1px size so the browser actually renders/decodes content before printing
-    iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;border:none;';
-    document.body.appendChild(iframe);
+    const style = document.createElement('style');
+    style.id = '__print-style';
+    style.textContent = `
+      @media print {
+        @page { size: ${size}; margin: 0; }
+        body > *:not(#__print-overlay) { display: none !important; visibility: hidden !important; }
+        #__print-overlay {
+          display: block !important; visibility: visible !important;
+          position: fixed; inset: 0; width: 100%; height: 100%;
+        }
+        #__print-overlay img {
+          display: block; width: 100%; height: 100%; object-fit: fill;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+      }
+    `;
 
-    iframe.srcdoc = `<!DOCTYPE html><html><head><style>
-      @page { size: ${size}; margin: 0; }
-      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-      html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: white; }
-      img { display: block; width: 100%; height: 100%; object-fit: fill; }
-    </style><script>window.onafterprint = () => { if (window.frameElement) window.frameElement.remove(); }<\/script>
-    </head><body>
-      <img src="${dataURL}" onload="window.focus(); window.print();" />
-    </body></html>`;
+    const overlay = document.createElement('div');
+    overlay.id = '__print-overlay';
+    overlay.style.display = 'none';
+    overlay.innerHTML = `<img src="${dataURL}" />`;
+
+    const cleanup = () => {
+      document.getElementById('__print-style')?.remove();
+      document.getElementById('__print-overlay')?.remove();
+      window.onafterprint = null;
+    };
+
+    document.head.appendChild(style);
+    document.body.appendChild(overlay);
+    window.onafterprint = cleanup;
+    window.print();
   };
 
   // ── Orientation toggle ─────────────────────────────────────────────────────
