@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/custom-postcards/static/css/main.f6ee0beb.css",
-    "main.js": "/custom-postcards/static/js/main.93fc1d01.js",
+    "main.js": "/custom-postcards/static/js/main.db1b2169.js",
     "static/js/453.343eaee1.chunk.js": "/custom-postcards/static/js/453.343eaee1.chunk.js",
     "static/media/zion_postcard_png.png": "/custom-postcards/static/media/zion_postcard_png.f69b6beac1b93d5c201f.png",
     "static/media/zion_postcard_png_h.png": "/custom-postcards/static/media/zion_postcard_png_h.30484dd7ea1e7687a31a.png",
@@ -17,11 +17,11 @@
     "static/media/postal-stamp.svg": "/custom-postcards/static/media/postal-stamp.9b0cf5fb9b591fa991ba.svg",
     "index.html": "/custom-postcards/index.html",
     "main.f6ee0beb.css.map": "/custom-postcards/static/css/main.f6ee0beb.css.map",
-    "main.93fc1d01.js.map": "/custom-postcards/static/js/main.93fc1d01.js.map",
+    "main.db1b2169.js.map": "/custom-postcards/static/js/main.db1b2169.js.map",
     "453.343eaee1.chunk.js.map": "/custom-postcards/static/js/453.343eaee1.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.f6ee0beb.css",
-    "static/js/main.93fc1d01.js"
+    "static/js/main.db1b2169.js"
   ]
 }
