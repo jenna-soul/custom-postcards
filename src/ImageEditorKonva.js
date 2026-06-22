@@ -178,8 +178,9 @@ const ImageEditorKonva = ({ location }) => {
 
     const overlay = document.createElement('div');
     overlay.id = '__print-overlay';
-    overlay.style.display = 'none';
-    overlay.innerHTML = `<img src="${dataURL}" />`;
+    // Off-screen instead of display:none so the browser actually decodes the image
+    overlay.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:600px;height:400px;overflow:hidden;';
+    overlay.innerHTML = `<img src="${dataURL}" style="width:100%;height:100%;object-fit:fill;" />`;
 
     const cleanup = () => {
       document.getElementById('__print-style')?.remove();
@@ -190,7 +191,14 @@ const ImageEditorKonva = ({ location }) => {
     document.head.appendChild(style);
     document.body.appendChild(overlay);
     window.onafterprint = cleanup;
-    window.print();
+
+    const img = overlay.querySelector('img');
+    if (img.complete) {
+      window.print();
+    } else {
+      img.onload = () => window.print();
+      img.onerror = () => window.print();
+    }
   };
 
   // ── Orientation toggle ─────────────────────────────────────────────────────
