@@ -150,34 +150,46 @@ const ImageEditorKonva = ({ location }) => {
   };
 
   // ── Print ──────────────────────────────────────────────────────────────────
-  // On mobile: uses the Web Share API to open the native share/print sheet.
-  // On desktop: opens a new tab with just the image and triggers print there.
+  // Mobile: Web Share API → native share sheet where user picks Print.
+  //   No window.open() needed, and no Android/iOS print preview bugs.
+  // Desktop: window.open() called synchronously (before async work) so
+  //   popup blockers don't trigger, then populate the tab and print.
 
-  const handlePrint = async () => {
+  const handlePrint = () => {
     if (!stageRef.current) return;
     const size = orientation === 'landscape' ? '6in 4in' : '4in 6in';
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    const w = isMobile ? null : window.open('', '_blank');
 
     const canvas = stageRef.current.toCanvas({ pixelRatio: 2 });
     canvas.toBlob(async (blob) => {
-      if (!blob) return;
+      if (!blob) { w?.close(); return; }
 
-      const file = new File([blob], 'postcard.jpg', { type: 'image/jpeg' });
-
-      // Web Share API — available on Android Chrome and iOS Safari
-      if (navigator.canShare?.({ files: [file] })) {
-        try {
-          await navigator.share({ files: [file], title: 'Postcard' });
-          return;
-        } catch (err) {
-          if (err.name === 'AbortError') return; // user cancelled share sheet
+      if (isMobile) {
+        const file = new File([blob], 'postcard.jpg', { type: 'image/jpeg' });
+        if (navigator.canShare?.({ files: [file] })) {
+          try {
+            await navigator.share({ files: [file], title: 'Postcard' });
+            return;
+          } catch (err) {
+            if (err.name === 'AbortError') return;
+          }
         }
+        // Fallback: download the image so the user can print from Photos/Gallery
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'postcard.jpg';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+        return;
       }
 
-      // Desktop fallback: new tab with blob URL
+      if (!w) return;
       const blobURL = URL.createObjectURL(blob);
-      const w = window.open('', '_blank');
-      if (!w) { URL.revokeObjectURL(blobURL); return; }
-
       w.document.write(`<!DOCTYPE html><html><head><style>
         @page { size: ${size}; margin: 0; }
         * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
