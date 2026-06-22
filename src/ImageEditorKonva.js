@@ -166,7 +166,12 @@ const ImageEditorKonva = ({ location }) => {
         body > *:not(#__print-overlay) { display: none !important; visibility: hidden !important; }
         #__print-overlay {
           display: block !important; visibility: visible !important;
-          position: fixed; inset: 0; width: 100%; height: 100%;
+          position: fixed !important;
+          left: 0 !important; top: 0 !important;
+          right: 0 !important; bottom: 0 !important;
+          width: 100% !important; height: 100% !important;
+          overflow: visible !important;
+          transform: none !important;
         }
         #__print-overlay img {
           display: block; width: 100%; height: 100%; object-fit: fill;

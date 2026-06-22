@@ -382,10 +382,3 @@ button {
     margin: 0 auto;
   }
 }
-
-/* ── Print ───────────────────────────────────────────────────────────────── */
-/* Printing is handled via an isolated iframe — see handlePrint in           */
-/* ImageEditorKonva.js. This rule prevents Ctrl+P from printing the UI.     */
-@media print {
-  body { display: none; }
-}
