@@ -150,27 +150,35 @@ const ImageEditorKonva = ({ location }) => {
   };
 
   // ── Print ──────────────────────────────────────────────────────────────────
-  // Opens a new tab containing only the canvas image and triggers print there.
-  // Avoids all @media print / CSS conflicts that cause blank previews on mobile.
+  // Exports the canvas as a JPEG blob, opens a new tab with a blob URL (short
+  // reference rather than a multi-MB base64 string), and triggers print there.
+  // The blob URL approach avoids Android Chrome's "preparing preview" hang.
 
   const handlePrint = () => {
     if (!stageRef.current) return;
-    const dataURL = stageRef.current.toDataURL({ pixelRatio: 3 });
-    const size    = orientation === 'landscape' ? '6in 4in' : '4in 6in';
+    const size = orientation === 'landscape' ? '6in 4in' : '4in 6in';
 
-    const w = window.open('', '_blank');
-    if (!w) return;
+    const canvas = stageRef.current.toCanvas({ pixelRatio: 2 });
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const blobURL = URL.createObjectURL(blob);
 
-    w.document.write(`<!DOCTYPE html><html><head><style>
-      @page { size: ${size}; margin: 0; }
-      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-      html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
-      img { display: block; width: 100%; height: 100%; object-fit: fill; }
-    </style></head><body>
-      <img src="${dataURL}" onload="window.print();" />
-      <script>window.onafterprint = () => window.close();<\/script>
-    </body></html>`);
-    w.document.close();
+      const w = window.open('', '_blank');
+      if (!w) { URL.revokeObjectURL(blobURL); return; }
+
+      w.document.write(`<!DOCTYPE html><html><head><style>
+        @page { size: ${size}; margin: 0; }
+        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+        img { display: block; width: 100%; height: 100%; object-fit: fill; }
+      </style></head><body>
+        <img src="${blobURL}" onload="window.print();" />
+        <script>window.onafterprint = function() { window.close(); };<\/script>
+      </body></html>`);
+      w.document.close();
+
+      setTimeout(() => URL.revokeObjectURL(blobURL), 120000);
+    }, 'image/jpeg', 0.9);
   };
 
   // ── Orientation toggle ─────────────────────────────────────────────────────
