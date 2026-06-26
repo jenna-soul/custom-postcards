@@ -3,7 +3,7 @@ import { LOCATION_ZONES } from "../locationZones";
 
 const ctx = require.context("../assets", true, /\.(png|svg)$/);
 const allImageEntries = ctx.keys()
-  .filter(key => key.split('/').length > 2)
+  .filter(key => key.split('/').length > 2 && !key.includes('/regImages/'))
   .map(key => {
     const mod = ctx(key);
     return { key, src: typeof mod === 'string' ? mod : mod.default };
