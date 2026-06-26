@@ -22,7 +22,7 @@ export const LOCATION_ZONES = [
   {
     name: 'california',
     label: 'California',
-    bounds: { minLat: 32.5 , maxLat: 42.0 , minLon: -124.5 , maxLon: -114.1  }
+    bounds: { minLat: 42.0, maxLat: 46.25, minLon: -124.6, maxLon: -116.5 }
   }
 ];
 
