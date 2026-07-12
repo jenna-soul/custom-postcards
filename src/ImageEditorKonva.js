@@ -31,10 +31,54 @@ const ImageEditorKonva = ({ location }) => {
   const [imageObj]  = useImage(imageUrl  || '');
   const [frameObj]  = useImage(frameUrl  || '');
 
-  const stageRef = useRef(null);
+  const stageRef   = useRef(null);
+  const wrapperRef = useRef(null);
+  const pinchRef   = useRef(null);
+  const imageRef   = useRef(null);
 
   const CANVAS_WIDTH  = POSTCARD_SIZES[orientation].width;
   const CANVAS_HEIGHT = POSTCARD_SIZES[orientation].height;
+
+  // ── Responsive display scale ────────────────────────────────────────────────
+  // The Konva Stage keeps CANVAS_WIDTH/HEIGHT as its internal "design" coordinate
+  // system (imagePosition/imageScale math all assumes this), but on small or
+  // landscape-phone screens that box doesn't fit. Instead of relying on the
+  // 768px CSS breakpoint (a landscape phone is often wider than that yet still
+  // too narrow for a 170px sidebar + 600px canvas), we measure the actual
+  // available space and shrink the Stage's own width/height/scale to fit.
+  // Konva accounts for stage scale in all of its own pointer-position math, so
+  // dragging/clicking keeps working correctly at any displayScale for free.
+  const [displayScale, setDisplayScale] = useState(1);
+
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+
+    const BORDER = 16; // #printableArea's 8px white border, both sides, added outside its content box
+    const recompute = () => {
+      const availableWidth = el.clientWidth - BORDER;
+      // Use the wrapper's actual position so we account for whatever's
+      // already above it (nav bar, heading, sidebar row on mobile) instead
+      // of guessing a flat percentage — critical on short landscape-phone
+      // viewports where that header content eats a big share of the height.
+      const availableHeight = window.innerHeight - el.getBoundingClientRect().top - BORDER - 16;
+      const scale = Math.min(
+        1,
+        availableWidth  / CANVAS_WIDTH,
+        availableHeight / CANVAS_HEIGHT
+      );
+      setDisplayScale(scale > 0 ? scale : 1);
+    };
+
+    recompute();
+    const ro = new ResizeObserver(recompute);
+    ro.observe(el);
+    window.addEventListener('resize', recompute);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', recompute);
+    };
+  }, [CANVAS_WIDTH, CANVAS_HEIGHT]);
 
   // ── Scale helpers ──────────────────────────────────────────────────────────
 
@@ -149,11 +193,105 @@ const ImageEditorKonva = ({ location }) => {
     });
   };
 
+  // ── Pinch-to-zoom (mobile) ─────────────────────────────────────────────────
+  // Converts each touch point from screen pixels into the Stage's design
+  // coordinate space (inverting the stage's absolute transform, which includes
+  // displayScale) so the pinch math lines up with imageScale/imagePosition
+  // regardless of how small the on-screen canvas is.
+
+  const getTouchDesignPoint = (touch) => {
+    const stage = stageRef.current;
+    const rect  = stage.container().getBoundingClientRect();
+    const rawX  = (touch.clientX - rect.left) * (stage.width()  / rect.width);
+    const rawY  = (touch.clientY - rect.top)  * (stage.height() / rect.height);
+    return stage.getAbsoluteTransform().copy().invert().point({ x: rawX, y: rawY });
+  };
+
+  // Konva starts its own single-finger drag as soon as a touch lands on the
+  // (draggable) photo, and while Konva.isDragging() is true it swallows all
+  // further pointer/touch events at the Stage level — so a second finger
+  // touching down would otherwise never reach handleTouchMove at all. Killing
+  // the in-progress drag and toggling draggable off for the duration of the
+  // pinch hands control over to our own handler.
+  const handleTouchStart = (e) => {
+    if (e.evt.touches.length >= 2 && imageRef.current) {
+      imageRef.current.stopDrag();
+      imageRef.current.draggable(false);
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    const touches = e.evt.touches;
+    if (!imageObj || touches.length !== 2) {
+      pinchRef.current = null;
+      return;
+    }
+    e.evt.preventDefault();
+
+    const p1     = getTouchDesignPoint(touches[0]);
+    const p2     = getTouchDesignPoint(touches[1]);
+    const dist   = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+    const center = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+
+    if (!pinchRef.current) {
+      pinchRef.current = { dist, center };
+      return;
+    }
+
+    const minScale = getMinCoverScale();
+    const factor   = dist / pinchRef.current.dist;
+
+    setImageScale(prevScale => {
+      const nextScale = Math.max(minScale, Math.min(prevScale * factor, MAX_SCALE));
+      const imgPointX = (center.x - imagePosition.x) / prevScale;
+      const imgPointY = (center.y - imagePosition.y) / prevScale;
+      const clamped   = clampPosition(
+        center.x - imgPointX * nextScale,
+        center.y - imgPointY * nextScale,
+        nextScale
+      );
+      setImagePosition(clamped);
+      return nextScale;
+    });
+
+    pinchRef.current = { dist, center };
+  };
+
+  const handleTouchEnd = (e) => {
+    if (e.evt.touches.length < 2) {
+      pinchRef.current = null;
+      if (imageRef.current) imageRef.current.draggable(true);
+    }
+  };
+
   // ── Print ──────────────────────────────────────────────────────────────────
   // Mobile: Web Share API → native share sheet where user picks Print.
   //   No window.open() needed, and no Android/iOS print preview bugs.
+  //   That handoff means the OS's own print pipeline (AirPrint / Android print
+  //   framework) renders the final page, and most of those default to a
+  //   "borderless"/"fill" mode that scales the image up a few percent and
+  //   crops the edges to guarantee full bleed regardless of paper-feed
+  //   tolerance — commonly ~1/8"-1/4" per side. We can't configure that dialog
+  //   from here, so PRINT_SAFE_MARGIN bakes a matching white inset into the
+  //   exported image itself: whatever gets auto-cropped eats into that inset
+  //   instead of the photo or frame artwork.
   // Desktop: window.open() called synchronously (before async work) so
   //   popup blockers don't trigger, then populate the tab and print.
+
+  const PRINT_SAFE_MARGIN = 0.04; // 4% inset per side (~0.16-0.24in on a 4-6in card)
+
+  const addPrintSafeMargin = (sourceCanvas) => {
+    const out = document.createElement('canvas');
+    out.width  = sourceCanvas.width;
+    out.height = sourceCanvas.height;
+    const ctx = out.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, out.width, out.height);
+    const insetX = out.width  * PRINT_SAFE_MARGIN;
+    const insetY = out.height * PRINT_SAFE_MARGIN;
+    ctx.drawImage(sourceCanvas, insetX, insetY, out.width - insetX * 2, out.height - insetY * 2);
+    return out;
+  };
 
   const handlePrint = () => {
     if (!stageRef.current) return;
@@ -162,7 +300,10 @@ const ImageEditorKonva = ({ location }) => {
 
     const w = isMobile ? null : window.open('', '_blank');
 
-    const canvas = stageRef.current.toCanvas({ pixelRatio: 2 });
+    // pixelRatio compensates for displayScale so export resolution stays
+    // constant (CANVAS_WIDTH*2 x CANVAS_HEIGHT*2) regardless of on-screen size.
+    const rawCanvas = stageRef.current.toCanvas({ pixelRatio: 2 / displayScale });
+    const canvas = isMobile ? addPrintSafeMargin(rawCanvas) : rawCanvas;
     canvas.toBlob(async (blob) => {
       if (!blob) { w?.close(); return; }
 
@@ -284,53 +425,65 @@ const ImageEditorKonva = ({ location }) => {
       </div>
 
       <div className="content">
-        <div
-          id="printableArea"
-          style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT, position: 'relative' }}
-        >
-          <Stage ref={stageRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT}>
+        <div className="stage-wrapper" ref={wrapperRef}>
+          <div
+            id="printableArea"
+            style={{ width: CANVAS_WIDTH * displayScale, height: CANVAS_HEIGHT * displayScale, position: 'relative' }}
+          >
+            <Stage
+              ref={stageRef}
+              width={CANVAS_WIDTH * displayScale}
+              height={CANVAS_HEIGHT * displayScale}
+              scaleX={displayScale}
+              scaleY={displayScale}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
 
-            {/* Layer 1 – user photo */}
-            <Layer>
-              {imageObj && (
-                <KonvaImage
-                  image={imageObj}
-                  x={imagePosition.x}
-                  y={imagePosition.y}
-                  width={imageObj.width  * imageScale}
-                  height={imageObj.height * imageScale}
-                  draggable
-                  dragBoundFunc={(pos) => clampPosition(pos.x, pos.y)}
-                  onDragEnd={(e) =>
-                    setImagePosition({ x: e.target.x(), y: e.target.y() })
-                  }
-                />
-              )}
-            </Layer>
+              {/* Layer 1 – user photo */}
+              <Layer>
+                {imageObj && (
+                  <KonvaImage
+                    ref={imageRef}
+                    image={imageObj}
+                    x={imagePosition.x}
+                    y={imagePosition.y}
+                    width={imageObj.width  * imageScale}
+                    height={imageObj.height * imageScale}
+                    draggable
+                    dragBoundFunc={(pos) => clampPosition(pos.x, pos.y)}
+                    onDragEnd={(e) =>
+                      setImagePosition({ x: e.target.x(), y: e.target.y() })
+                    }
+                  />
+                )}
+              </Layer>
 
-            {/* Layer 2 – frame overlay (always on top, non-interactive) */}
-            <Layer>
-              {frameObj && (
-                <KonvaImage
-                  image={frameObj}
-                  x={0}
-                  y={0}
-                  width={CANVAS_WIDTH}
-                  height={CANVAS_HEIGHT}
-                  listening={false}
-                />
-              )}
-            </Layer>
+              {/* Layer 2 – frame overlay (always on top, non-interactive) */}
+              <Layer>
+                {frameObj && (
+                  <KonvaImage
+                    image={frameObj}
+                    x={0}
+                    y={0}
+                    width={CANVAS_WIDTH}
+                    height={CANVAS_HEIGHT}
+                    listening={false}
+                  />
+                )}
+              </Layer>
 
-          </Stage>
+            </Stage>
 
-          {/* Empty state — clicking opens the file picker */}
-          {!imageObj && (
-            <label htmlFor="file-upload" className="canvas-empty-state">
-              <FontAwesomeIcon icon={faCamera} size="2x" />
-              <span>Tap to add a photo</span>
-            </label>
-          )}
+            {/* Empty state — clicking opens the file picker */}
+            {!imageObj && (
+              <label htmlFor="file-upload" className="canvas-empty-state">
+                <FontAwesomeIcon icon={faCamera} size="2x" />
+                <span>Tap to add a photo</span>
+              </label>
+            )}
+          </div>
         </div>
 
         <Frames

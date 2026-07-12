@@ -196,6 +196,12 @@ button {
 }
 
 /* ── Postcard canvas ─────────────────────────────────────────────────────── */
+/* Sizes itself in JS to fit whatever space is available (ImageEditorKonva's
+   displayScale), so it never overflows on small or landscape phone screens. */
+.stage-wrapper {
+  width: 100%;
+}
+
 /* White mat border + thin peach ring + warm shadow = photo-on-desk look */
 #printableArea {
   cursor: grab;
@@ -204,6 +210,9 @@ button {
   overflow: hidden;
   display: block;
   border: 8px solid #ffffff;
+  /* Let our own touch handler drive pinch-zoom instead of the browser's
+     native page-zoom/scroll gestures fighting it. */
+  touch-action: none;
   box-shadow:
     0 0 0 2px #f4c5a8,
     0 12px 40px rgba(180, 100, 60, 0.14),
