@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/custom-postcards/static/css/main.745e9450.css",
-    "main.js": "/custom-postcards/static/js/main.1d73cc98.js",
+    "main.js": "/custom-postcards/static/js/main.c219ecf9.js",
     "static/js/453.343eaee1.chunk.js": "/custom-postcards/static/js/453.343eaee1.chunk.js",
     "static/media/seqoia-tree-portrait.png": "/custom-postcards/static/media/seqoia-tree-portrait.377c5090bacc9ca92e00.png",
     "static/media/sequoia tree portraitborder.png": "/custom-postcards/static/media/sequoia tree portraitborder.5a534072ec5b368acd97.png",
@@ -9,7 +9,6 @@
     "static/media/zion_postcard_png.png": "/custom-postcards/static/media/zion_postcard_png.f69b6beac1b93d5c201f.png",
     "static/media/zion_postcard_png_h.png": "/custom-postcards/static/media/zion_postcard_png_h.30484dd7ea1e7687a31a.png",
     "static/media/san fran portrait.png": "/custom-postcards/static/media/san fran portrait.9e3640df2888b5d8d222.png",
-    "static/media/Untitled design.png": "/custom-postcards/static/media/Untitled design.62898196fefefc60e842.png",
     "static/media/campBanners_landscape.png": "/custom-postcards/static/media/campBanners_landscape.90b26b4e1845fe93dc38.png",
     "static/media/sequoia-national-park_portrait.png": "/custom-postcards/static/media/sequoia-national-park_portrait.b89546564a652a306fd3.png",
     "static/media/sequoia-national-park_landscape.png": "/custom-postcards/static/media/sequoia-national-park_landscape.bf3c6ddeb371bb459aab.png",
@@ -17,19 +16,17 @@
     "static/media/AliceAdamBanner_landscape.png": "/custom-postcards/static/media/AliceAdamBanner_landscape.d35132bd7e4495af4d82.png",
     "static/media/ireland_landscape.png": "/custom-postcards/static/media/ireland_landscape.452b1adafc8f9922a7e2.png",
     "static/media/ireland_portrait.png": "/custom-postcards/static/media/ireland_portrait.ebb16ba250a66dcb8cbe.png",
-    "static/media/wi_state_outline.svg": "/custom-postcards/static/media/wi_state_outline.09cdcec76e123958c77a.svg",
-    "static/media/Messenger_creation_CFF0CB8C-F9BC-4120-8776-4428425CA373.png": "/custom-postcards/static/media/Messenger_creation_CFF0CB8C-F9BC-4120-8776-4428425CA373.34b7369d6d9b0ff80895.png",
     "static/media/logo-postal-stamp.svg": "/custom-postcards/static/media/logo-postal-stamp.6edd9e70c1fd1b5d6683.svg",
     "static/media/logo-postal-stamp.svg?url": "/custom-postcards/static/media/logo-postal-stamp.6edd9e70c1fd1b5d66838cc1a71f5d32.svg",
     "static/media/test.svg": "/custom-postcards/static/media/test.d18c47b5148a86c64c51.svg",
     "static/media/postal-stamp.svg": "/custom-postcards/static/media/postal-stamp.9b0cf5fb9b591fa991ba.svg",
     "index.html": "/custom-postcards/index.html",
     "main.745e9450.css.map": "/custom-postcards/static/css/main.745e9450.css.map",
-    "main.1d73cc98.js.map": "/custom-postcards/static/js/main.1d73cc98.js.map",
+    "main.c219ecf9.js.map": "/custom-postcards/static/js/main.c219ecf9.js.map",
     "453.343eaee1.chunk.js.map": "/custom-postcards/static/js/453.343eaee1.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.745e9450.css",
-    "static/js/main.1d73cc98.js"
+    "static/js/main.c219ecf9.js"
   ]
 }
