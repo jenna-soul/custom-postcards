@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/custom-postcards/static/css/main.745e9450.css",
-    "main.js": "/custom-postcards/static/js/main.c219ecf9.js",
+    "main.js": "/custom-postcards/static/js/main.8c1edf8b.js",
     "static/js/453.343eaee1.chunk.js": "/custom-postcards/static/js/453.343eaee1.chunk.js",
     "static/media/seqoia-tree-portrait.png": "/custom-postcards/static/media/seqoia-tree-portrait.377c5090bacc9ca92e00.png",
     "static/media/sequoia tree portraitborder.png": "/custom-postcards/static/media/sequoia tree portraitborder.5a534072ec5b368acd97.png",
@@ -10,6 +10,7 @@
     "static/media/zion_postcard_png_h.png": "/custom-postcards/static/media/zion_postcard_png_h.30484dd7ea1e7687a31a.png",
     "static/media/san fran portrait.png": "/custom-postcards/static/media/san fran portrait.9e3640df2888b5d8d222.png",
     "static/media/campBanners_landscape.png": "/custom-postcards/static/media/campBanners_landscape.90b26b4e1845fe93dc38.png",
+    "static/media/postcard_bday.png": "/custom-postcards/static/media/postcard_bday.33c81f655c0271fe0f55.png",
     "static/media/sequoia-national-park_portrait.png": "/custom-postcards/static/media/sequoia-national-park_portrait.b89546564a652a306fd3.png",
     "static/media/sequoia-national-park_landscape.png": "/custom-postcards/static/media/sequoia-national-park_landscape.bf3c6ddeb371bb459aab.png",
     "static/media/AliceAdamBanner_portrait.png": "/custom-postcards/static/media/AliceAdamBanner_portrait.bc6f525bb3c5e9f138a3.png",
@@ -22,11 +23,11 @@
     "static/media/postal-stamp.svg": "/custom-postcards/static/media/postal-stamp.9b0cf5fb9b591fa991ba.svg",
     "index.html": "/custom-postcards/index.html",
     "main.745e9450.css.map": "/custom-postcards/static/css/main.745e9450.css.map",
-    "main.c219ecf9.js.map": "/custom-postcards/static/js/main.c219ecf9.js.map",
+    "main.8c1edf8b.js.map": "/custom-postcards/static/js/main.8c1edf8b.js.map",
     "453.343eaee1.chunk.js.map": "/custom-postcards/static/js/453.343eaee1.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.745e9450.css",
-    "static/js/main.c219ecf9.js"
+    "static/js/main.8c1edf8b.js"
   ]
 }

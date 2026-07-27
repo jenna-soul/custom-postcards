@@ -9,3 +9,10 @@
     label: 'Oregon',
     bounds: { minLat: 42.0, maxLat: 46.25, minLon: -124.6, maxLon: -116.5 }
   }
+
+
+  ##To Buy 
+  https://www.canakit.com/Common/System/Cart.aspx
+  -Raspberry Pi 4 2GB
+  - CanaKit 3.5A Raspberry Pi 4 Power Supply (USB-C)
+  - CanaKit Raspberry Pi 4 Case - Premium Black (High-Gloss)
